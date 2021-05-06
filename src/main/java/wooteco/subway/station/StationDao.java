@@ -14,7 +14,8 @@ import java.util.Objects;
 @Repository
 public class StationDao {
 
-    public static final RowMapper<Station> STATION_ROW_MAPPER = (resultSet, rowNum) -> new Station(resultSet.getLong("id"), resultSet.getString("name"));
+    private static final RowMapper<Station> STATION_ROW_MAPPER = (resultSet, rowNum) -> new Station(resultSet.getLong("id"), resultSet.getString("name"));
+    private static final GeneratedKeyHolder KEY_HOLDER = new GeneratedKeyHolder();
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -22,17 +23,22 @@ public class StationDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public Station findById(Long id) {
+        String sql = "SELECT * FROM station WHERE id = (?)";
+
+        return jdbcTemplate.queryForObject(sql, STATION_ROW_MAPPER, id);
+    }
+
     public Station save(Station station) {
         String sql = "INSERT INTO station (name) values (?)";
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, station.getName());
             return ps;
-        }, keyHolder);
+        }, KEY_HOLDER);
 
-        return new Station(Objects.requireNonNull(keyHolder.getKey()).longValue(), station.getName());
+        return new Station(Objects.requireNonNull(KEY_HOLDER.getKey()).longValue(), station.getName());
     }
 
     public List<Station> findAll() {

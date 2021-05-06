@@ -7,22 +7,25 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
+import wooteco.subway.section.Section;
+import wooteco.subway.station.Station;
+import wooteco.subway.station.StationDao;
 
 @RestController
 public class LineController {
 
     private final LineDao lineDao;
+    private final LineService lineService;
 
-    public LineController(LineDao lineDao) {
+    public LineController(LineDao lineDao, LineService lineService) {
         this.lineDao = lineDao;
+        this.lineService = lineService;
     }
 
     @PostMapping("/lines")
     public ResponseEntity<LineResponse> createLine(@RequestBody LineRequest lineRequest) {
-        Line line = new Line(lineRequest.getName(), lineRequest.getColor());
-        Line newLine = lineDao.save(line);
-        LineResponse lineResponse = new LineResponse(newLine.getId(), newLine.getName(), newLine.getColor());
-        return ResponseEntity.created(URI.create("/lines/" + newLine.getId())).body(lineResponse);
+        LineResponse lineResponse = lineService.createLine(lineRequest);
+        return ResponseEntity.created(URI.create("/lines/" + lineResponse.getId())).body(lineResponse);
     }
 
     @GetMapping(value = "/lines", produces = MediaType.APPLICATION_JSON_VALUE)
