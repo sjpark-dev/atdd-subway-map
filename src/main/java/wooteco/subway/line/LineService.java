@@ -47,9 +47,16 @@ public class LineService {
         }
     }
 
+    private void validateDuplicateStationId(Long upStationId, Long downStationId) {
+        if (upStationId.equals(downStationId)) {
+            throw new IllegalArgumentException("상행 종점역과 하행 종점역이 같습니다.");
+        }
+    }
+
     public LineResponse createLine(LineRequest lineRequest) {
         validateStationId(lineRequest.getUpStationId());
         validateStationId(lineRequest.getDownStationId());
+        validateDuplicateStationId(lineRequest.getUpStationId(), lineRequest.getDownStationId());
         Station upStation = stationDao.findById(lineRequest.getUpStationId());
         Station downStation = stationDao.findById(lineRequest.getDownStationId());
 
