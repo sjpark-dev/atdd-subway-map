@@ -1,11 +1,8 @@
 package wooteco.subway.line;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import wooteco.subway.section.Distance;
 import wooteco.subway.section.Section;
+import wooteco.subway.section.Sections;
 import wooteco.subway.station.Station;
 
 public class Line {
@@ -13,7 +10,7 @@ public class Line {
     private Long id;
     private String name;
     private String color;
-    private Set<Section> sections = new HashSet<>();
+    private Sections sections;
 
     public Line(Long id, String name, String color) {
         this.id = id;
@@ -30,23 +27,18 @@ public class Line {
         this.id = id;
         this.name = name;
         this.color = color;
-        sections.add(section);
-        sections
-            .add(new Section(Station.emptyStation(), section.upStation(), Distance.nullDistance()));
-        sections.add(
-            new Section(section.downStation(), Station.emptyStation(), Distance.nullDistance()));
+        this.sections = new Sections(section);
     }
 
     public Line(String name, String color, Section section) {
         this(null, name, color, section);
     }
 
-    public Line(Long id, String name, String color,
-        Set<Section> sections) {
+    public Line(Long id, String name, String color, Sections sections) {
         this.id = id;
         this.name = name;
         this.color = color;
-        this.sections = new HashSet<>(sections);
+        this.sections = sections;
     }
 
     public Long getId() {
@@ -61,26 +53,11 @@ public class Line {
         return color;
     }
 
-    public Set<Section> sections() {
-        return new HashSet<>(sections);
+    public Sections sections() {
+        return sections;
     }
 
     public List<Station> path() {
-        List<Station> result = new ArrayList<>();
-        Station now = sectionWithUpStation(Station.emptyStation()).downStation();
-
-        while (!now.isEmptyStation()) {
-            result.add(now);
-            now = sectionWithUpStation(now).downStation();
-        }
-
-        return result;
-    }
-
-    private Section sectionWithUpStation(Station station) {
-        return sections.stream()
-            .filter(section -> section.upStation().equals(station))
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("상행 종점역이 존재하지 않습니다."));
+        return sections.path();
     }
 }

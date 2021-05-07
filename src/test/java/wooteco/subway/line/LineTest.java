@@ -1,6 +1,5 @@
 package wooteco.subway.line;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import org.junit.jupiter.api.DisplayName;
@@ -16,9 +15,11 @@ public class LineTest {
     @Test
     void createLine() {
         assertThatCode(() -> {
-            Section section = new Section(new Station(1L, "강남역"), new Station(2L, "잠실역"), Distance.of(10));
+            Section section = new Section(new Station(1L, "강남역"), new Station(2L, "잠실역"),
+                Distance.of(10));
             new Line(1L, "강남역", "bg-red-600", section);
         }).doesNotThrowAnyException();
     }
+
 
 }

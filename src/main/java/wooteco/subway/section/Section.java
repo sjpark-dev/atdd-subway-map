@@ -22,6 +22,14 @@ public class Section {
         return downStation;
     }
 
+    public boolean isFirstSection() {
+        return upStation.isEmptyStation();
+    }
+
+    public boolean isLastSection() {
+        return downStation.isEmptyStation();
+    }
+
     public Distance distance() {
         return distance;
     }
