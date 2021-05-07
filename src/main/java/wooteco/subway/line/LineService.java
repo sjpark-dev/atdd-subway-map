@@ -57,6 +57,8 @@ public class LineService {
         validateStationId(lineRequest.getUpStationId());
         validateStationId(lineRequest.getDownStationId());
         validateDuplicateStationId(lineRequest.getUpStationId(), lineRequest.getDownStationId());
+        validateLineName(lineRequest.getName());
+        validateLineColor(lineRequest.getColor());
         Station upStation = stationDao.findById(lineRequest.getUpStationId());
         Station downStation = stationDao.findById(lineRequest.getDownStationId());
 
@@ -68,6 +70,18 @@ public class LineService {
 
         return new LineResponse(newLine.getId(), newLine.getName(), newLine.getColor(),
             stationResponsesByLine(newLine));
+    }
+
+    private void validateLineColor(String color) {
+        if (lineDao.hasColor(color)) {
+            throw new IllegalArgumentException("이미 존재하는 색깔입니다.");
+        }
+    }
+
+    private void validateLineName(String name) {
+        if (lineDao.hasName(name)) {
+            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+        }
     }
 
     private List<StationResponse> stationResponsesByLine(Line line) {

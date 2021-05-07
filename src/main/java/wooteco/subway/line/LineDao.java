@@ -74,4 +74,16 @@ public class LineDao {
         String sql = "DELETE FROM line WHERE id = (?)";
         jdbcTemplate.update(sql, id);
     }
+
+    public boolean hasName(String name) {
+        String sql = "SELECT COUNT(*) FROM line WHERE `name` = (?)";
+
+        return jdbcTemplate.queryForObject(sql, Integer.class, name) > 0;
+    }
+
+    public boolean hasColor(String color) {
+        String sql = "SELECT COUNT(*) FROM line WHERE color = (?)";
+
+        return jdbcTemplate.queryForObject(sql, Integer.class, color) > 0;
+    }
 }

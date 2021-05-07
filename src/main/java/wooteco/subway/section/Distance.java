@@ -10,7 +10,14 @@ public class Distance {
     }
 
     private Distance(int value) {
+        validate(value);
         this.value = value;
+    }
+
+    private void validate(int value) {
+        if (value <= 0) {
+            throw new IllegalArgumentException("거리는 자연수이어야 합니다.");
+        }
     }
 
     public static Distance of(int value) {

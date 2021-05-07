@@ -15,6 +15,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import wooteco.subway.AcceptanceTest;
@@ -124,12 +126,18 @@ public class LineAcceptanceTest extends AcceptanceTest {
         Map<String, String> params1 = new HashMap<>();
         params1.put("color", "bg-red-600");
         params1.put("name", "신분당선");
+        params1.put("upStationId", String.valueOf(stationIds.get(0)));
+        params1.put("downStationId", String.valueOf(stationIds.get(1)));
+        params1.put("distance", "10");
         postLine(params1);
 
         // when
         Map<String, String> params2 = new HashMap<>();
         params2.put("color", "bg-blue-600");
         params2.put("name", "신분당선");
+        params2.put("upStationId", String.valueOf(stationIds.get(2)));
+        params2.put("downStationId", String.valueOf(stationIds.get(3)));
+        params2.put("distance", "10");
         ExtractableResponse<Response> response = postLine(params2);
 
         // then
@@ -143,15 +151,40 @@ public class LineAcceptanceTest extends AcceptanceTest {
         Map<String, String> params1 = new HashMap<>();
         params1.put("color", "bg-red-600");
         params1.put("name", "신분당선");
+        params1.put("upStationId", String.valueOf(stationIds.get(0)));
+        params1.put("downStationId", String.valueOf(stationIds.get(1)));
+        params1.put("distance", "10");
         postLine(params1);
 
         // when
         Map<String, String> params2 = new HashMap<>();
         params2.put("color", "bg-red-600");
         params2.put("name", "분당선");
+        params2.put("upStationId", String.valueOf(stationIds.get(2)));
+        params2.put("downStationId", String.valueOf(stationIds.get(3)));
+        params2.put("distance", "10");
         ExtractableResponse<Response> response = postLine(params2);
 
         // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @DisplayName("자연수가 아닌 거리를 입력한다.")
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "14.2", "십"})
+    void createLineWithNoneNaturalNumberDistance(String distance) {
+        // given
+        Map<String, String> params = new HashMap<>();
+        params.put("color", "bg-red-600");
+        params.put("name", "신분당선");
+        params.put("upStationId", String.valueOf(stationIds.get(0)));
+        params.put("downStationId", String.valueOf(stationIds.get(1)));
+        params.put("distance", distance);
+
+        //when
+        ExtractableResponse<Response> response = postLine(params);
+
+        //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
@@ -236,6 +269,9 @@ public class LineAcceptanceTest extends AcceptanceTest {
         Map<String, String> params1 = new HashMap<>();
         params1.put("color", "bg-red-600");
         params1.put("name", "신분당선");
+        params1.put("upStationId", String.valueOf(stationIds.get(0)));
+        params1.put("downStationId", String.valueOf(stationIds.get(1)));
+        params1.put("distance", "10");
         postLine(params1);
 
         Map<String, String> params2 = new HashMap<>();
@@ -289,6 +325,9 @@ public class LineAcceptanceTest extends AcceptanceTest {
         Map<String, String> params1 = new HashMap<>();
         params1.put("color", "bg-red-600");
         params1.put("name", "신분당선");
+        params1.put("upStationId", String.valueOf(stationIds.get(0)));
+        params1.put("downStationId", String.valueOf(stationIds.get(1)));
+        params1.put("distance", "10");
         postLine(params1);
 
         // when
@@ -299,7 +338,7 @@ public class LineAcceptanceTest extends AcceptanceTest {
             .when()
             .body(params2)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .get("/lines/0")
+            .put("/lines/0")
             .then().log().all()
             .extract();
 
