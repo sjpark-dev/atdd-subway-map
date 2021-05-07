@@ -1,6 +1,7 @@
 package wooteco.subway.station;
 
 public class Station {
+
     private static final Station EMPTY_STATION = new Station();
 
     private Long id;

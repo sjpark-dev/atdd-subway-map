@@ -23,15 +23,44 @@ public class LineService {
         this.sectionDao = sectionDao;
     }
 
+    private void validateLineId(Long id) {
+        if (!lineDao.hasId(id)) {
+            throw new IllegalArgumentException("존재하지 않는 노선 ID 입니다.");
+        }
+    }
+
+    private void validateLineName(Long id, String name) {
+        if (lineDao.hasNameAndDifferentId(id, name)) {
+            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+        }
+    }
+
+    private void validateLineColor(Long id, String color) {
+        if (lineDao.hasColorAndDifferentId(id, color)) {
+            throw new IllegalArgumentException("이미 존재하는 색깔입니다.");
+        }
+    }
+
+    private void validateStationId(Long id) {
+        if (!stationDao.hasId(id)) {
+            throw new IllegalArgumentException("존재하지 않는 역 id 입니다.");
+        }
+    }
+
     public LineResponse createLine(LineRequest lineRequest) {
+        validateStationId(lineRequest.getUpStationId());
+        validateStationId(lineRequest.getDownStationId());
         Station upStation = stationDao.findById(lineRequest.getUpStationId());
         Station downStation = stationDao.findById(lineRequest.getDownStationId());
 
-        Section section = new Section(upStation, downStation, Distance.of(lineRequest.getDistance()));
-        Line newLine = lineDao.save(new Line(lineRequest.getName(), lineRequest.getColor(), section));
+        Section section = new Section(upStation, downStation,
+            Distance.of(lineRequest.getDistance()));
+        Line newLine = lineDao
+            .save(new Line(lineRequest.getName(), lineRequest.getColor(), section));
         sectionDao.save(section, newLine.getId());
 
-        return new LineResponse(newLine.getId(), newLine.getName(), newLine.getColor(), stationResponsesByLine(newLine));
+        return new LineResponse(newLine.getId(), newLine.getName(), newLine.getColor(),
+            stationResponsesByLine(newLine));
     }
 
     private List<StationResponse> stationResponsesByLine(Line line) {
@@ -39,5 +68,33 @@ public class LineService {
             .stream()
             .map(station -> new StationResponse(station.getId(), station.getName()))
             .collect(Collectors.toList());
+    }
+
+    public List<LineResponse> showLines() {
+        List<Line> lines = lineDao.findAll();
+
+        return lines.stream()
+            .map(it -> new LineResponse(it.getId(), it.getName(), it.getColor()))
+            .collect(Collectors.toList());
+    }
+
+
+    public LineResponse showLine(Long id) {
+        validateLineId(id);
+        Line line = lineDao.findById(id);
+        return new LineResponse(line.getId(), line.getName(), line.getColor());
+    }
+
+    public void updateLine(Long id, LineRequest lineRequest) {
+        validateLineId(id);
+        validateLineName(id, lineRequest.getName());
+        validateLineColor(id, lineRequest.getColor());
+        Line line = new Line(id, lineRequest.getName(), lineRequest.getColor());
+        lineDao.updateById(id, line);
+    }
+
+    public void deleteLine(Long id) {
+        validateLineId(id);
+        lineDao.deleteById(id);
     }
 }

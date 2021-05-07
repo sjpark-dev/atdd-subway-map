@@ -10,7 +10,7 @@ public class Sections {
 
     private final Set<Section> sections;
 
-    public Sections (Section section) {
+    public Sections(Section section) {
         sections = new HashSet<>();
         sections.add(section);
         sections
@@ -19,7 +19,7 @@ public class Sections {
             new Section(section.downStation(), Station.emptyStation(), Distance.nullDistance()));
     }
 
-    public Sections (Set<Section> sections) {
+    public Sections(Set<Section> sections) {
         this.sections = new HashSet<>(sections);
     }
 

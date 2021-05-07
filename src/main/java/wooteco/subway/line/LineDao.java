@@ -36,6 +36,24 @@ public class LineDao {
             line.getColor(), line.sections());
     }
 
+    public boolean hasId(Long id) {
+        String sql = "SELECT COUNT(*) FROM line WHERE id = (?)";
+
+        return jdbcTemplate.queryForObject(sql, Integer.class, id) > 0;
+    }
+
+    public boolean hasNameAndDifferentId(Long id, String name) {
+        String sql = "SELECT COUNT(*) FROM line WHERE `name` = (?) AND id <> (?)";
+
+        return jdbcTemplate.queryForObject(sql, Integer.class, name, id) > 0;
+    }
+
+    public boolean hasColorAndDifferentId(Long id, String color) {
+        String sql = "SELECT COUNT(*) FROM line WHERE color = (?) AND id <> (?)";
+
+        return jdbcTemplate.queryForObject(sql, Integer.class, color, id) > 0;
+    }
+
     public List<Line> findAll() {
         String sql = "SELECT * FROM line";
 
@@ -49,19 +67,11 @@ public class LineDao {
 
     public void updateById(Long id, Line line) {
         String sql = "UPDATE line SET name = (?), color = (?) WHERE id = (?) ";
-        int updatedRowCount = jdbcTemplate.update(sql, line.getName(), line.getColor(), id);
-
-        if (updatedRowCount == 0) {
-            throw new IllegalArgumentException("존재하지 않는 id 입니다.");
-        }
+        jdbcTemplate.update(sql, line.getName(), line.getColor(), id);
     }
 
     public void deleteById(Long id) {
         String sql = "DELETE FROM line WHERE id = (?)";
-        int updatedRowCount = jdbcTemplate.update(sql, id);
-
-        if (updatedRowCount == 0) {
-            throw new IllegalArgumentException("존재하지 않는 id 입니다.");
-        }
+        jdbcTemplate.update(sql, id);
     }
 }
