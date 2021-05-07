@@ -20,6 +20,4 @@ public class LineTest {
             new Line(1L, "강남역", "bg-red-600", section);
         }).doesNotThrowAnyException();
     }
-
-
 }

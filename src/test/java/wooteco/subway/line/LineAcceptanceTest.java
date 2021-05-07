@@ -22,6 +22,7 @@ import wooteco.subway.station.StationResponse;
 
 @DisplayName("지하철노선 관련 기능")
 public class LineAcceptanceTest extends AcceptanceTest {
+
     private final List<Long> stationIds = new ArrayList<>();
 
     @BeforeEach
@@ -50,6 +51,17 @@ public class LineAcceptanceTest extends AcceptanceTest {
             .header("Location").split("/")[2]);
     }
 
+    private ExtractableResponse<Response> postLine(Map<String, String> params) {
+        return RestAssured.given().log().all()
+            .body(params)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .when()
+            .post("/lines")
+            .then()
+            .log().all()
+            .extract();
+    }
+
     @DisplayName("노선을 생성한다.")
     @Test
     void createLine() {
@@ -70,19 +82,24 @@ public class LineAcceptanceTest extends AcceptanceTest {
         assertThat(lineResponse.getColor()).isEqualTo("bg-red-600");
         assertThat(lineResponse.getName()).isEqualTo("신분당선");
 
-        List<StationResponse> expect = Arrays.asList(new StationResponse(stationIds.get(0), "강남역"), new StationResponse(stationIds.get(1), "잠실역"));
+        List<StationResponse> expect = Arrays.asList(new StationResponse(stationIds.get(0), "강남역"),
+            new StationResponse(stationIds.get(1), "잠실역"));
         assertThat(lineResponse.getStations()).usingRecursiveComparison().isEqualTo(expect);
     }
 
-    private ExtractableResponse<Response> postLine(Map<String, String> params) {
-        return RestAssured.given().log().all()
-            .body(params)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .when()
-            .post("/lines")
-            .then()
-            .log().all()
-            .extract();
+    @DisplayName("존재 하지 않는 ID의 역을 상행 또는 하행 종점역으로 사용한다.")
+    @Test
+    void createLineWithInvalidStationId() {
+        // when
+        Map<String, String> params = new HashMap<>();
+        params.put("color", "bg-red-600");
+        params.put("name", "신분당선");
+        params.put("upStationId", "999");
+        params.put("downStationId", String.valueOf(stationIds.get(1)));
+        params.put("distance", "10");
+        ExtractableResponse<Response> response = postLine(params);
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @DisplayName("기존에 존재하는 노선 이름으로 노선을 생성한다.")
@@ -232,7 +249,7 @@ public class LineAcceptanceTest extends AcceptanceTest {
         params1.put("upStationId", String.valueOf(stationIds.get(0)));
         params1.put("downStationId", String.valueOf(stationIds.get(1)));
         params1.put("distance", "10");
-        ExtractableResponse<Response> createResponse1 = postLine(params1);
+        ExtractableResponse<Response> createResponse = postLine(params1);
 
         // when
         Map<String, String> params2 = new HashMap<>();
@@ -242,7 +259,7 @@ public class LineAcceptanceTest extends AcceptanceTest {
             .body(params2)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .when()
-            .put(createResponse1.header("Location"))
+            .put(createResponse.header("Location"))
             .then().log().all()
             .extract();
 
