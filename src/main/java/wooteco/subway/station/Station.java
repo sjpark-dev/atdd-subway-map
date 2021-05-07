@@ -2,13 +2,10 @@ package wooteco.subway.station;
 
 public class Station {
 
-    private static final Station EMPTY_STATION = new Station();
+    private static final Station EMPTY_STATION = new Station(-1L, "");
 
     private Long id;
     private String name;
-
-    private Station() {
-    }
 
     public Station(Long id, String name) {
         this.id = id;

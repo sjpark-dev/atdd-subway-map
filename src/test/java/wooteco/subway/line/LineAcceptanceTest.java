@@ -260,6 +260,8 @@ public class LineAcceptanceTest extends AcceptanceTest {
             .isEqualTo(Long.parseLong(createResponse.header("Location").split("/")[2]));
         assertThat(lineResponse.getColor()).isEqualTo("bg-red-600");
         assertThat(lineResponse.getName()).isEqualTo("신분당선");
+        assertThat(lineResponse.getStations()).containsExactly(
+            new StationResponse(stationIds.get(0), "강남역"), new StationResponse(stationIds.get(1), "잠실역"));
     }
 
     @DisplayName("존재하지 않는 id의 노선을 조회한다.")

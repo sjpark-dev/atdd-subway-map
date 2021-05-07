@@ -47,4 +47,8 @@ public class Sections {
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("다음역이 존재하지 않습니다."));
     }
+
+    public List<Section> values() {
+        return new ArrayList<>(sections);
+    }
 }

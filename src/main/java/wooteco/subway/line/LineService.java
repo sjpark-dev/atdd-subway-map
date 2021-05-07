@@ -1,11 +1,15 @@
 package wooteco.subway.line;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import wooteco.subway.section.Distance;
 import wooteco.subway.section.Section;
 import wooteco.subway.section.SectionDao;
+import wooteco.subway.section.SectionEntity;
+import wooteco.subway.section.Sections;
 import wooteco.subway.station.Station;
 import wooteco.subway.station.StationDao;
 import wooteco.subway.station.StationResponse;
@@ -53,21 +57,6 @@ public class LineService {
         }
     }
 
-    public LineResponse createLine(LineRequest lineRequest) {
-        validateLineCreation(lineRequest);
-        Station upStation = stationDao.findById(lineRequest.getUpStationId());
-        Station downStation = stationDao.findById(lineRequest.getDownStationId());
-
-        Section section = new Section(upStation, downStation,
-            Distance.of(lineRequest.getDistance()));
-        Line newLine = lineDao
-            .save(new Line(lineRequest.getName(), lineRequest.getColor(), section));
-        sectionDao.save(section, newLine.getId());
-
-        return new LineResponse(newLine.getId(), newLine.getName(), newLine.getColor(),
-            stationResponsesByLine(newLine));
-    }
-
     private void validateLineCreation(LineRequest lineRequest) {
         validateStationId(lineRequest.getUpStationId());
         validateStationId(lineRequest.getDownStationId());
@@ -86,6 +75,21 @@ public class LineService {
         if (lineDao.hasName(name)) {
             throw new IllegalArgumentException("이미 존재하는 이름입니다.");
         }
+    }
+
+    public LineResponse createLine(LineRequest lineRequest) {
+        validateLineCreation(lineRequest);
+        Station upStation = stationDao.findById(lineRequest.getUpStationId());
+        Station downStation = stationDao.findById(lineRequest.getDownStationId());
+
+        Section section = new Section(upStation, downStation,
+            Distance.of(lineRequest.getDistance()));
+        Line newLine = lineDao
+            .save(new Line(lineRequest.getName(), lineRequest.getColor(), section));
+        sectionDao.save(newLine.sections(), newLine.getId());
+
+        return new LineResponse(newLine.getId(), newLine.getName(), newLine.getColor(),
+            stationResponsesByLine(newLine));
     }
 
     private List<StationResponse> stationResponsesByLine(Line line) {
@@ -107,7 +111,23 @@ public class LineService {
     public LineResponse showLine(Long id) {
         validateLineId(id);
         Line line = lineDao.findById(id);
-        return new LineResponse(line.getId(), line.getName(), line.getColor());
+        List<SectionEntity> sectionEntities = sectionDao.filterByLineId(id);
+
+        Set<Section> sections = new HashSet<>();
+        for (SectionEntity sectionEntity : sectionEntities) {
+            Station upStation = stationDao.findById(sectionEntity.getUpStationId());
+            Station downStation = stationDao.findById(sectionEntity.getDownStationId());
+            sections.add(new Section(upStation, downStation, Distance.of(sectionEntity.getDistance())));
+        }
+
+        Line lineWithSections = new Line(line.getId(), line.getName(), line.getColor(), new Sections(sections));
+
+        List<StationResponse> stationResponses = lineWithSections.path()
+            .stream()
+            .map(station -> new StationResponse(station.getId(), station.getName()))
+            .collect(Collectors.toList());
+
+        return new LineResponse(line.getId(), line.getName(), line.getColor(), stationResponses);
     }
 
     public void updateLine(Long id, LineRequest lineRequest) {
