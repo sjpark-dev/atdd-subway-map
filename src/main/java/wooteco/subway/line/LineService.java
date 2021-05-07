@@ -54,11 +54,7 @@ public class LineService {
     }
 
     public LineResponse createLine(LineRequest lineRequest) {
-        validateStationId(lineRequest.getUpStationId());
-        validateStationId(lineRequest.getDownStationId());
-        validateDuplicateStationId(lineRequest.getUpStationId(), lineRequest.getDownStationId());
-        validateLineName(lineRequest.getName());
-        validateLineColor(lineRequest.getColor());
+        validateLineCreation(lineRequest);
         Station upStation = stationDao.findById(lineRequest.getUpStationId());
         Station downStation = stationDao.findById(lineRequest.getDownStationId());
 
@@ -70,6 +66,14 @@ public class LineService {
 
         return new LineResponse(newLine.getId(), newLine.getName(), newLine.getColor(),
             stationResponsesByLine(newLine));
+    }
+
+    private void validateLineCreation(LineRequest lineRequest) {
+        validateStationId(lineRequest.getUpStationId());
+        validateStationId(lineRequest.getDownStationId());
+        validateDuplicateStationId(lineRequest.getUpStationId(), lineRequest.getDownStationId());
+        validateLineName(lineRequest.getName());
+        validateLineColor(lineRequest.getColor());
     }
 
     private void validateLineColor(String color) {
@@ -107,11 +111,15 @@ public class LineService {
     }
 
     public void updateLine(Long id, LineRequest lineRequest) {
+        validateLineUpdate(id, lineRequest);
+        Line line = new Line(id, lineRequest.getName(), lineRequest.getColor());
+        lineDao.updateById(id, line);
+    }
+
+    private void validateLineUpdate(Long id, LineRequest lineRequest) {
         validateLineId(id);
         validateLineName(id, lineRequest.getName());
         validateLineColor(id, lineRequest.getColor());
-        Line line = new Line(id, lineRequest.getName(), lineRequest.getColor());
-        lineDao.updateById(id, line);
     }
 
     public void deleteLine(Long id) {
